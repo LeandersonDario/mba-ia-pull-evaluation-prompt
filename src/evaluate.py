@@ -328,7 +328,7 @@ def main():
         print("\nCertifique-se de que o arquivo existe antes de continuar.")
         return 1
 
-    dataset_name = f"{project_name}-eval"
+    dataset_name = f"{project_name}-v20"
     create_evaluation_dataset(client, dataset_name, jsonl_path)
 
     print("\n" + "=" * 70)

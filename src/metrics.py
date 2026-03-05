@@ -28,7 +28,7 @@ import re
 from typing import Dict, Any
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
-from utils import get_eval_llm
+from utils import get_eval_llm, retry_on_rate_limit
 
 load_dotenv()
 
@@ -39,6 +39,9 @@ def get_evaluator_llm():
     Suporta OpenAI e Google Gemini baseado no .env
     """
     return get_eval_llm(temperature=0)
+
+
+import time
 
 
 def extract_json_from_response(response_text: str) -> Dict[str, Any]:
@@ -65,6 +68,7 @@ def extract_json_from_response(response_text: str) -> Dict[str, Any]:
         return {"score": 0.0, "reasoning": "Erro ao processar resposta"}
 
 
+@retry_on_rate_limit()
 def evaluate_f1_score(question: str, answer: str, reference: str) -> Dict[str, Any]:
     """
     Calcula F1-Score usando LLM-as-Judge.
@@ -158,6 +162,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_clarity(question: str, answer: str, reference: str) -> Dict[str, Any]:
     """
     Avalia a clareza e estrutura da resposta usando LLM-as-Judge.
@@ -244,6 +249,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_precision(question: str, answer: str, reference: str) -> Dict[str, Any]:
     """
     Avalia a precisão da resposta usando LLM-as-Judge.
@@ -331,6 +337,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_tone_score(bug_report: str, user_story: str, reference: str) -> Dict[str, Any]:
     """
     Avalia o tom da user story (profissional e empático).
@@ -416,6 +423,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_acceptance_criteria_score(bug_report: str, user_story: str, reference: str) -> Dict[str, Any]:
     """
     Avalia a qualidade dos critérios de aceitação.
@@ -504,6 +512,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_user_story_format_score(bug_report: str, user_story: str, reference: str) -> Dict[str, Any]:
     """
     Avalia se a user story segue o formato padrão correto.
@@ -594,6 +603,7 @@ NÃO adicione nenhum texto antes ou depois do JSON.
         }
 
 
+@retry_on_rate_limit()
 def evaluate_completeness_score(bug_report: str, user_story: str, reference: str) -> Dict[str, Any]:
     """
     Avalia a completude da user story em relação ao bug.

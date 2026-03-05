@@ -5,11 +5,36 @@ Funções auxiliares para o projeto de otimização de prompts.
 import os
 import yaml
 import json
+import time
 from typing import Dict, Any, Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def retry_on_rate_limit(max_retries=5, initial_delay=10):
+    """Decorador para repetir chamadas em caso de Rate Limit (ResourceExhausted)."""
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            retries = 0
+            delay = initial_delay
+            while retries < max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    error_msg = str(e).lower()
+                    # Captura erros 429 do Gemini e OpenAI
+                    if any(x in error_msg for x in ["429", "resource_exhausted", "quota", "rate limit"]):
+                        retries += 1
+                        print(f"⚠️  Rate limit atingido em {func.__name__}. Tentativa {retries}/{max_retries}. Aguardando {delay}s...")
+                        time.sleep(delay)
+                        delay *= 2  # Exponential backoff
+                    else:
+                        raise e
+            return func(*args, **kwargs) # Última tentativa sem capturar erro
+        return wrapper
+    return decorator
 
 
 def load_yaml(file_path: str) -> Optional[Dict[str, Any]]:
